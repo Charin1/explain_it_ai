@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Loader2, Sparkles, Atom, Settings2, ChevronDown, Search, Zap } from 'lucide-react';
 import { explainIt, getModels, type ExplanationResponse, type ModelInfo } from './api';
 import ExplanationResult from './components/ExplanationResult';
@@ -12,6 +13,27 @@ function App() {
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [selectedModel, setSelectedModel] = useState<ModelInfo | null>(null);
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
+
+  const modelMenuRef = useRef<HTMLDivElement>(null);
+  const modelButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isModelMenuOpen &&
+        modelMenuRef.current &&
+        modelButtonRef.current &&
+        !modelMenuRef.current.contains(event.target as Node) &&
+        !modelButtonRef.current.contains(event.target as Node)
+      ) {
+        setIsModelMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isModelMenuOpen]);
 
   useEffect(() => {
     const fetchModels = async () => {
@@ -62,11 +84,8 @@ function App() {
   return (
     <div className="relative min-h-screen text-slate-200">
 
-      {/* ═══════════════════════════════════════════════════════════
-          AMBIENT BACKGROUND - Premium depth with animated orbs
-      ═══════════════════════════════════════════════════════════ */}
+      {/* Ambient Background */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        {/* Primary blue orb - top left */}
         <div
           className="absolute w-[600px] h-[600px] rounded-full animate-pulse-glow"
           style={{
@@ -75,7 +94,6 @@ function App() {
             background: 'radial-gradient(circle, hsla(217, 91%, 60%, 0.15) 0%, transparent 70%)',
           }}
         />
-        {/* Secondary purple orb - bottom right */}
         <div
           className="absolute w-[500px] h-[500px] rounded-full animate-pulse-glow delay-500"
           style={{
@@ -84,7 +102,6 @@ function App() {
             background: 'radial-gradient(circle, hsla(265, 83%, 65%, 0.12) 0%, transparent 70%)',
           }}
         />
-        {/* Accent cyan orb - center */}
         <div
           className="absolute w-[400px] h-[400px] rounded-full animate-pulse-glow delay-300"
           style={{
@@ -98,17 +115,17 @@ function App() {
 
       <div className="relative z-10 min-h-screen flex flex-col">
 
-        {/* ═══════════════════════════════════════════════════════════
-            HEADER - Sticky with glass effect
-        ═══════════════════════════════════════════════════════════ */}
-        <header className="sticky top-0 z-50 w-full bg-slate-950/60 border-b border-white/[0.06]" style={{ backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}>
+        {/* Header */}
+        <header
+          className="sticky top-0 z-50 w-full bg-slate-950/60 border-b border-white/[0.06]"
+          style={{ backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
+        >
           <div className="max-w-6xl mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
 
               {/* Left - Logo & Branding */}
               <div className="flex items-center gap-3 group cursor-pointer">
                 <div className="relative">
-                  {/* Glow effect behind icon */}
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl blur-lg opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
                   <div className="relative p-2.5 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 shadow-lg">
                     <Atom className="text-white w-5 h-5 animate-spin-slow" />
@@ -129,6 +146,7 @@ function App() {
               {/* Right - Model Selector */}
               <div className="relative">
                 <button
+                  ref={modelButtonRef}
                   onClick={() => setIsModelMenuOpen(!isModelMenuOpen)}
                   className="flex items-center gap-2.5 px-4 py-2 rounded-full text-xs font-medium text-slate-400 glass-button hover:text-white"
                 >
@@ -137,12 +155,21 @@ function App() {
                   <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isModelMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
-                {isModelMenuOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-64 glass-panel-premium p-2 animate-scale-in z-50">
+                {/* Dropdown Menu - Rendered in Portal to escape header context */}
+                {isModelMenuOpen && createPortal(
+                  <div
+                    ref={modelMenuRef}
+                    style={{
+                      position: 'fixed',
+                      top: modelButtonRef.current ? modelButtonRef.current.getBoundingClientRect().bottom + 8 : 0,
+                      left: modelButtonRef.current ? modelButtonRef.current.getBoundingClientRect().right - 256 : 0, // 256px is w-64
+                    }}
+                    className="w-64 glass-panel-premium p-2 animate-scale-in z-[9999] shadow-2xl"
+                  >
                     <div className="px-3 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-white/5 mb-1">
                       Select AI Model
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-1 max-h-80 overflow-y-auto">
                       {models.map((model) => (
                         <button
                           key={`${model.provider}-${model.name}`}
@@ -160,16 +187,15 @@ function App() {
                         </button>
                       ))}
                     </div>
-                  </div>
+                  </div>,
+                  document.body
                 )}
               </div>
             </div>
           </div>
         </header>
 
-        {/* ═══════════════════════════════════════════════════════════
-            MAIN CONTENT
-        ═══════════════════════════════════════════════════════════ */}
+        {/* Main Content */}
         <main className="flex-grow flex flex-col w-full max-w-5xl mx-auto px-6">
 
           {/* Hero Search Section */}
@@ -178,7 +204,7 @@ function App() {
 
             <div className="text-center w-full max-w-4xl mx-auto">
 
-              {/* Hero Headline - Only when no results */}
+              {/* Hero Headline */}
               {!result && (
                 <div className="mb-12 animate-fade-in-up">
                   <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight text-balance">
@@ -195,7 +221,6 @@ function App() {
 
               {/* Search Input */}
               <form onSubmit={handleExplain} className="relative max-w-3xl mx-auto group animate-fade-in-up delay-150">
-                {/* Glow effect behind input */}
                 <div
                   className="absolute -inset-1 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-500"
                   style={{
@@ -204,12 +229,10 @@ function App() {
                 />
 
                 <div className="relative glass-panel-premium p-2 flex items-center gap-2">
-                  {/* Search Icon */}
                   <div className="pl-3 flex-shrink-0">
                     <Search className="w-5 h-5 text-slate-500" />
                   </div>
 
-                  {/* Input Field */}
                   <input
                     type="text"
                     value={query}
@@ -219,7 +242,6 @@ function App() {
                     disabled={loading}
                   />
 
-                  {/* Submit Button */}
                   <button
                     type="submit"
                     disabled={loading || !query.trim()}
@@ -235,7 +257,7 @@ function App() {
                 </div>
               </form>
 
-              {/* Suggestion Chips - Only when no results */}
+              {/* Suggestion Chips */}
               {!result && !loading && (
                 <div className="mt-8 flex flex-wrap justify-center gap-3 animate-fade-in-up delay-300">
                   {suggestionQuestions.map((suggestion, index) => (
@@ -288,9 +310,7 @@ function App() {
           )}
         </main>
 
-        {/* ═══════════════════════════════════════════════════════════
-            FOOTER
-        ═══════════════════════════════════════════════════════════ */}
+        {/* Footer */}
         {!result && !loading && (
           <footer className="py-8 text-center">
             <p className="text-slate-600 text-xs">
