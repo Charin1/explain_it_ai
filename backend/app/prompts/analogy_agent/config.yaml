@@ -1,0 +1,4 @@
+input_variables:
+  - scenario
+  - explanations
+  - format_instructions

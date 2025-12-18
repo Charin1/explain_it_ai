@@ -2,26 +2,15 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from app.schemas import AnalogyOutput, AgentState
 from app.llm_factory import get_llm
+from app.services.prompt_loader import PromptLoader
 import os
 
 def analogy_agent(state: AgentState):
     llm = get_llm(state.model_provider, state.model_name, temperature=0.7)
     parser = PydanticOutputParser(pydantic_object=AnalogyOutput)
     
-    template = """
-    You are a creative teacher. 
-    Create a fun, relatable analogy to explain the following physics concept to a layperson.
-    
-    Scenario: {scenario}
-    Scientific Principle: {explanations}
-    
-    The analogy should be simple, using everyday objects or situations.
-    
-    Format output as JSON:
-    {format_instructions}
-    """
-    
-    prompt = ChatPromptTemplate.from_template(template)
+    loader = PromptLoader()
+    prompt = loader.load_prompt("analogy_agent")
     chain = prompt | llm | parser
     
     # Aggregate scientific explanations for context

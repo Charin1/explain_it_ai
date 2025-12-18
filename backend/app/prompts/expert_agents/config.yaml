@@ -1,0 +1,6 @@
+input_variables:
+  - domain
+  - object
+  - action
+  - phenomenon
+  - format_instructions

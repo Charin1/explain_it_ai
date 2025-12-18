@@ -3,6 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from app.schemas import FinalResponse, AgentState, ExperimentOutput, VisualModelOutput, AnalogyOutput
 from app.llm_factory import get_llm
+from app.services.prompt_loader import PromptLoader
 import os
 
 def composer_agent(state: AgentState):
@@ -31,28 +32,10 @@ def composer_agent(state: AgentState):
     # Let's treat Composer as the one creating the "Simple Explanation" and "Step-by-Step"
     # based on the Expert findings.
     
-    template = """
-    You are a Physics Explorer.
-    Synthesize the technical explanations provided by the experts into a coherent, simple answer for a general audience.
+    # based on the Expert findings.
     
-    User Query: {user_query}
-    Expert Explanations:
-    {scientific_explanations}
-    
-    1. Write a "Simple Explanation" (What's happening?) - plain English, no jargon.
-    2. Write a "Step-by-Step Breakdown" of the process.
-    
-    Format output as JSON:
-    {{
-      "simple_explanation": "...",
-      "step_by_step": ["step 1", "step 2", ...]
-    }}
-    """
-    
-    # We can use a partial schema or just a dict output parser
-    from langchain_core.output_parsers import JsonOutputParser
-    
-    prompt = ChatPromptTemplate.from_template(template)
+    loader = PromptLoader()
+    prompt = loader.load_prompt("composer_agent")
     chain = prompt | llm | JsonOutputParser()
     
     result = chain.invoke({

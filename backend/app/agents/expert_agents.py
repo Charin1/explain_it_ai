@@ -2,6 +2,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from app.schemas import ScientificExplanation, AgentState
 from app.llm_factory import get_llm
+from app.services.prompt_loader import PromptLoader
 import os
 
 def expert_agents_node(state: AgentState):
@@ -19,20 +20,8 @@ def expert_agents_node(state: AgentState):
         llm = get_llm(state.model_provider, state.model_name, temperature=0.2)
         parser = PydanticOutputParser(pydantic_object=ScientificExplanation)
         
-        template = """
-        You are an expert in {domain}.
-        Explain the following scenario using principles from your domain.
-        
-        Scenario: {object} {action}
-        Phenomenon: {phenomenon}
-        
-        Provide the core principle, reasoning, and forces involved.
-        
-        Format output as JSON:
-        {format_instructions}
-        """
-        
-        prompt = ChatPromptTemplate.from_template(template)
+        loader = PromptLoader()
+        prompt = loader.load_prompt("expert_agents")
         chain = prompt | llm | parser
         
         try:

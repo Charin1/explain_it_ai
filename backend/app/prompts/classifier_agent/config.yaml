@@ -1,0 +1,4 @@
+input_variables:
+  - object
+  - action
+  - format_instructions
