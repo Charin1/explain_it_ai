@@ -61,3 +61,17 @@ export const explainIt = async (query: string, modelProvider?: string, modelName
     });
     return response.data;
 };
+
+export interface SurpriseResponse {
+    questions: string[];
+}
+
+export const getSurpriseQuestions = async (modelProvider?: string, modelName?: string): Promise<string[]> => {
+    // We send a dummy query because the backend expects an ExplainRequest body
+    const response = await api.post<SurpriseResponse>('/surprise', {
+        query: "surprise me",
+        model_provider: modelProvider,
+        model_name: modelName
+    });
+    return response.data.questions;
+};

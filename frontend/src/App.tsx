@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Loader2, Sparkles, Atom, Settings2, ChevronDown, Search, Zap } from 'lucide-react';
-import { explainIt, getModels, type ExplanationResponse, type ModelInfo } from './api';
+import { explainIt, getModels, getSurpriseQuestions, type ExplanationResponse, type ModelInfo } from './api';
 import ExplanationResult from './components/ExplanationResult';
 
 function App() {
@@ -13,6 +13,14 @@ function App() {
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [selectedModel, setSelectedModel] = useState<ModelInfo | null>(null);
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
+
+  // Suggestions state
+  const [suggestions, setSuggestions] = useState<string[]>([
+    'Why is the sky blue?',
+    'How do magnets work?',
+    'Why does ice float?'
+  ]);
+  const [loadingSurprise, setLoadingSurprise] = useState(false);
 
   const modelMenuRef = useRef<HTMLDivElement>(null);
   const modelButtonRef = useRef<HTMLButtonElement>(null);
@@ -75,11 +83,22 @@ function App() {
     }
   };
 
-  const suggestionQuestions = [
-    'Why is the sky blue?',
-    'How do magnets work?',
-    'Why does ice float?'
-  ];
+  const handleSurprise = async () => {
+    if (loadingSurprise) return;
+    setLoadingSurprise(true);
+    try {
+      const newQuestions = await getSurpriseQuestions(selectedModel?.provider, selectedModel?.name);
+      if (newQuestions && newQuestions.length > 0) {
+        setSuggestions(newQuestions);
+      }
+    } catch (err) {
+      console.error("Failed to get surprise questions", err);
+    } finally {
+      setLoadingSurprise(false);
+    }
+  };
+
+
 
   return (
     <div className="relative min-h-screen text-slate-200">
@@ -259,18 +278,33 @@ function App() {
 
               {/* Suggestion Chips */}
               {!result && !loading && (
-                <div className="mt-8 flex flex-wrap justify-center gap-3 animate-fade-in-up delay-300">
-                  {suggestionQuestions.map((suggestion, index) => (
-                    <button
-                      key={suggestion}
-                      onClick={() => setQuery(suggestion)}
-                      className="glass-button px-5 py-2.5 text-sm text-slate-400 hover:text-cyan-300 flex items-center gap-2 group"
-                      style={{ animationDelay: `${300 + index * 75}ms` }}
-                    >
-                      <Zap className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-opacity" />
-                      {suggestion}
-                    </button>
-                  ))}
+                <div className="mt-8 flex flex-col items-center animate-fade-in-up delay-300">
+                  <div className="flex flex-wrap justify-center gap-3">
+                    {suggestions.map((suggestion, index) => (
+                      <button
+                        key={suggestion}
+                        onClick={() => setQuery(suggestion)}
+                        className="glass-button px-5 py-2.5 text-sm text-slate-400 hover:text-cyan-300 flex items-center gap-2 group"
+                        style={{ animationDelay: `${300 + index * 75}ms` }}
+                      >
+                        <Zap className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-opacity" />
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={handleSurprise}
+                    disabled={loadingSurprise}
+                    className="mt-6 text-xs font-medium text-slate-500 hover:text-cyan-400 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    {loadingSurprise ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-3 h-3" />
+                    )}
+                    Surprise Me
+                  </button>
                 </div>
               )}
             </div>

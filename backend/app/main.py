@@ -21,7 +21,7 @@ app.add_middleware(
 class ExplainRequest(BaseModel):
     query: str
     model_provider: str = "google"
-    model_name: str = "gemini-2.5-flash"
+    model_name: str = "gemini-1.5-flash"
 
 @app.get("/")
 async def root():
@@ -38,7 +38,7 @@ async def get_models():
     """
     return {
         "models": [
-            {"provider": "google", "name": "gemini-2.5-flash", "label": "Gemini 2.5 Flash"},
+            {"provider": "google", "name": "gemini-1.5-flash", "label": "Gemini 1.5 Flash"},
             {"provider": "groq", "name": "openai/gpt-oss-120b", "label": "GPT-OSS 120B (Groq)"},
             {"provider": "groq", "name": "llama-3.3-70b-versatile", "label": "Llama 3.3 70B (Groq)"},
             {"provider": "groq", "name": "llama-3.1-8b-instant", "label": "Llama 3.1 8B (Groq)"},
@@ -64,4 +64,29 @@ async def explain(py_req: ExplainRequest):
         
     except Exception as e:
         print(f"Error processing request: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/surprise")
+async def surprise_me(py_req: ExplainRequest):
+    try:
+        from app.llm_factory import get_llm
+        from langchain_core.messages import HumanMessage
+        
+        llm = get_llm(py_req.model_provider, py_req.model_name)
+        
+        prompt = """Generate 3 very short, intriguing, and common "why" or "how" questions about everyday physics phenomena that a curious person might ask. 
+        Examples: "Why is the sky blue?", "How do magnets work?", "Why does ice float?".
+        Return ONLY the 3 questions separated by newlines. Do not number them."""
+        
+        response = await llm.ainvoke([HumanMessage(content=prompt)])
+        content = response.content.strip()
+        
+        questions = [q.strip() for q in content.split('\n') if q.strip()]
+        # Ensure we have at most 3
+        questions = questions[:3]
+        
+        return {"questions": questions}
+        
+    except Exception as e:
+        print(f"Error generating surprise questions: {e}")
         raise HTTPException(status_code=500, detail=str(e))

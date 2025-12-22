@@ -1,6 +1,6 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import PydanticOutputParser
+from langchain_core.output_parsers import PydanticOutputParser, JsonOutputParser
 from app.schemas import FinalResponse, AgentState, ExperimentOutput, VisualModelOutput, AnalogyOutput
 from app.llm_factory import get_llm
 from app.services.prompt_loader import PromptLoader

@@ -16,7 +16,7 @@ def test_get_models():
             
             # Check for specific models
             models = data.get("models", [])
-            has_gemini = any(m["provider"] == "google" and m["name"] == "gemini-2.5-flash" for m in models)
+            has_gemini = any(m["provider"] == "google" and m["name"] == "gemini-1.5-flash" for m in models)
             has_groq = any(m["provider"] == "groq" and "llama" in m["name"] for m in models)
             
             if has_gemini and has_groq:
