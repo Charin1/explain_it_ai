@@ -21,7 +21,7 @@ app.add_middleware(
 class ExplainRequest(BaseModel):
     query: str
     model_provider: str = "google"
-    model_name: str = "gemini-1.5-flash"
+    model_name: str = "gemini-2.5-flash"
 
 @app.get("/")
 async def root():
@@ -38,7 +38,7 @@ async def get_models():
     """
     return {
         "models": [
-            {"provider": "google", "name": "gemini-1.5-flash", "label": "Gemini 1.5 Flash"},
+            {"provider": "google", "name": "gemini-2.5-flash", "label": "Gemini 2.5 Flash"},
             {"provider": "groq", "name": "openai/gpt-oss-120b", "label": "GPT-OSS 120B (Groq)"},
             {"provider": "groq", "name": "llama-3.3-70b-versatile", "label": "Llama 3.3 70B (Groq)"},
             {"provider": "groq", "name": "llama-3.1-8b-instant", "label": "Llama 3.1 8B (Groq)"},
