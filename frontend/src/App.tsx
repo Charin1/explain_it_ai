@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Loader2, Sparkles, Atom, Settings2, ChevronDown, Search, Zap } from 'lucide-react';
+import { Loader2, Sparkles, Atom, Settings2, ChevronDown, Search, Zap, Music, Pencil, Move, Hash, Moon } from 'lucide-react';
 import { explainIt, getModels, getSurpriseQuestions, type ExplanationResponse, type ModelInfo } from './api';
 import ExplanationResult from './components/ExplanationResult';
 
@@ -13,6 +13,17 @@ function App() {
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [selectedModel, setSelectedModel] = useState<ModelInfo | null>(null);
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
+
+  // Analogy Style State
+  const [selectedStyle, setSelectedStyle] = useState<string>("General");
+  const styles = [
+    { id: "General", label: "General", icon: Zap },
+    { id: "Music", label: "Music", icon: Music },
+    { id: "Dance", label: "Dance", icon: Move },
+    { id: "Drawing", label: "Drawing", icon: Pencil },
+    { id: "Numerology", label: "Numerology", icon: Hash },
+    { id: "Astrology", label: "Astrology", icon: Moon },
+  ];
 
   // Suggestions state
   const [suggestions, setSuggestions] = useState<string[]>([
@@ -72,7 +83,8 @@ function App() {
       const data = await explainIt(
         query,
         selectedModel?.provider,
-        selectedModel?.name
+        selectedModel?.name,
+        selectedStyle
       );
       setResult(data);
     } catch (err) {
@@ -275,6 +287,27 @@ function App() {
                   </button>
                 </div>
               </form>
+
+              {/* Style Selector */}
+              {!result && (
+                <div className="mt-8 flex justify-center animate-fade-in-up delay-200">
+                  <div className="inline-flex bg-slate-950/40 backdrop-blur-md border border-white/5 rounded-full p-1 gap-1">
+                    {styles.map((style) => (
+                      <button
+                        key={style.id}
+                        onClick={() => setSelectedStyle(style.id)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${selectedStyle === style.id
+                          ? 'bg-white/10 text-white shadow-lg'
+                          : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                          }`}
+                      >
+                        <style.icon size={14} />
+                        <span>{style.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Suggestion Chips */}
               {!result && !loading && (

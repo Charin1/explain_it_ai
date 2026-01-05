@@ -46,6 +46,7 @@ class AgentState(BaseModel):
     user_query: str
     model_provider: str = "google"
     model_name: str = "gemini-2.5-flash"
+    analogy_style: str = "General"
     scenario: Optional[ScenarioOutput] = None
     domains: List[str] = []
     scientific_explanations: List[ScientificExplanation] = []

@@ -19,6 +19,7 @@ def analogy_agent(state: AgentState):
     result = chain.invoke({
         "scenario": str(state.scenario),
         "explanations": explanations_text,
+        "style": state.analogy_style,
         "format_instructions": parser.get_format_instructions()
     })
     

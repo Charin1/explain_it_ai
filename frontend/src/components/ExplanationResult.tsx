@@ -76,7 +76,7 @@ const ExplanationResult: React.FC<Props> = ({ data }) => {
                     </div>
 
                     <div className="flex-grow flex flex-col">
-                        <div className="bg-slate-950/60 rounded-xl p-5 border border-white/5 font-mono text-sm text-emerald-400 whitespace-pre-wrap shadow-inner overflow-x-auto flex-grow">
+                        <div className="bg-slate-950/60 rounded-xl p-5 border border-white/5 font-mono text-sm text-emerald-400 whitespace-pre-wrap shadow-inner overflow-x-auto flex-grow max-h-[500px] overflow-y-auto custom-scrollbar">
                             {data.visual_model.diagram_content}
                         </div>
                         <p className="text-sm text-slate-400 leading-relaxed mt-4">

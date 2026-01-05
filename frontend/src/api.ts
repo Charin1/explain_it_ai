@@ -53,11 +53,12 @@ export const getModels = async (): Promise<ModelInfo[]> => {
     return response.data.models;
 };
 
-export const explainIt = async (query: string, modelProvider?: string, modelName?: string): Promise<ExplanationResponse> => {
+export const explainIt = async (query: string, modelProvider?: string, modelName?: string, analogyStyle?: string): Promise<ExplanationResponse> => {
     const response = await api.post<ExplanationResponse>('/explain', {
         query,
         model_provider: modelProvider,
-        model_name: modelName
+        model_name: modelName,
+        analogy_style: analogyStyle || "General"
     });
     return response.data;
 };

@@ -22,6 +22,7 @@ class ExplainRequest(BaseModel):
     query: str
     model_provider: str = "google"
     model_name: str = "gemini-2.5-flash"
+    analogy_style: str = "General"
 
 @app.get("/")
 async def root():
@@ -53,7 +54,8 @@ async def explain(py_req: ExplainRequest):
         initial_state = {
             "user_query": py_req.query,
             "model_provider": py_req.model_provider,
-            "model_name": py_req.model_name
+            "model_name": py_req.model_name,
+            "analogy_style": py_req.analogy_style
         }
         
         # Invoke graph

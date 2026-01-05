@@ -40,7 +40,8 @@ def composer_agent(state: AgentState):
     
     result = chain.invoke({
         "user_query": state.user_query,
-        "scientific_explanations": [e.dict() for e in state.scientific_explanations]
+        "scientific_explanations": [e.dict() for e in state.scientific_explanations],
+        "style": state.analogy_style
     })
     
     # We can partially update FinalResponse or just store these in state

@@ -16,6 +16,7 @@ def visual_agent(state: AgentState):
     result = chain.invoke({
         "scenario": str(state.scenario),
         "simple_explanation": state.simple_explanation,
+        "style": state.analogy_style,
         "format_instructions": parser.get_format_instructions()
     })
     
